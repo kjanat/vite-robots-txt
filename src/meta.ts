@@ -1,17 +1,7 @@
 import type { HtmlTagDescriptor } from 'vite';
 import { AI_BOTS } from './presets.ts';
-import type { MetaDirective, MetaInput, MetaTag, OneOrMany, Preset } from './types.ts';
-
-/** Normalize `OneOrMany<T>` to `T[]` */
-function toArray<T>(value: OneOrMany<T> | undefined): T[] {
-	if (value === undefined) return [];
-	return Array.isArray(value) ? value : [value];
-}
-
-/** Check if a value is a MetaTag object (has `content` property) */
-function isMetaTag(value: unknown): value is MetaTag {
-	return typeof value === 'object' && value !== null && 'content' in value;
-}
+import type { MetaDirective, MetaInput, MetaTag, Preset } from './types.ts';
+import { toArray } from './utils.ts';
 
 /** Derive meta tags from a preset */
 function presetMetaTags(preset: Preset): MetaTag[] {
@@ -26,7 +16,6 @@ function presetMetaTags(preset: Preset): MetaTag[] {
 			}));
 
 		case 'searchOnly':
-			// Block indexing by default, allow only search engines
 			return [{ content: ['noindex', 'nofollow'] }];
 
 		case 'allowAll':
@@ -41,57 +30,45 @@ function presetMetaTags(preset: Preset): MetaTag[] {
  * Normalize the many shorthand forms of `MetaInput` into a flat `MetaTag[]`.
  *
  * - `true` → derive from preset
- * - `'noindex'` → `[{ name: 'robots', content: ['noindex'] }]`
- * - `['noindex', 'nofollow']` → `[{ name: 'robots', content: ['noindex', 'nofollow'] }]`
+ * - `'noindex'` → `[{ content: ['noindex'] }]`
+ * - `['noindex', 'nofollow']` → `[{ content: ['noindex', 'nofollow'] }]`
  * - `MetaTag` → `[tag]`
  * - `MetaTag[]` → tags as-is
  */
 function normalizeMeta(input: MetaInput, preset?: Preset): MetaTag[] {
-	// Boolean: derive from preset
 	if (input === true) {
-		if (!preset) return [{ content: ['index', 'follow'] }];
-		return presetMetaTags(preset);
+		return preset ? presetMetaTags(preset) : [{ content: ['index', 'follow'] }];
 	}
 	if (input === false) return [];
 
-	// String: single global directive
+	// String → single global directive
 	if (typeof input === 'string') {
 		return [{ content: [input] }];
 	}
 
-	// Array — could be MetaDirective[] or MetaTag[]
+	// Array — MetaDirective[] (strings) or MetaTag[] (objects)
 	if (Array.isArray(input)) {
-		// If first element is a string, treat entire array as directives
 		if (input.length === 0) return [];
 		if (typeof input[0] === 'string') {
 			return [{ content: input as MetaDirective[] }];
 		}
-		// Otherwise it's MetaTag[]
 		return input as MetaTag[];
 	}
 
-	// Single MetaTag object
-	if (isMetaTag(input)) {
-		return [input];
-	}
-
-	return [];
+	// Single MetaTag object (only remaining possibility)
+	return [input];
 }
 
 /** Convert normalized MetaTag[] into Vite HtmlTagDescriptor[] */
 function metaTagsToHtml(tags: MetaTag[]): HtmlTagDescriptor[] {
-	return tags.map((tag) => {
-		const name = tag.name ?? 'robots';
-		const directives = toArray(tag.content);
-		return {
-			tag: 'meta',
-			attrs: {
-				name,
-				content: directives.join(', '),
-			},
-			injectTo: 'head' as const,
-		};
-	});
+	return tags.map((tag) => ({
+		tag: 'meta',
+		attrs: {
+			name: tag.name ?? 'robots',
+			content: toArray(tag.content).join(', '),
+		},
+		injectTo: 'head' as const,
+	}));
 }
 
-export { metaTagsToHtml, normalizeMeta, presetMetaTags };
+export { metaTagsToHtml, normalizeMeta };

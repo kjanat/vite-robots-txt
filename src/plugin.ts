@@ -9,9 +9,16 @@ const DEV_ROBOTS = 'User-agent: *\nDisallow: /\n';
 
 type NextFn = () => void;
 
+/** Strip query string from URL for path matching */
+function matchPath(url: string | undefined, target: string): boolean {
+	if (!url) return false;
+	const path = url.split('?')[0];
+	return path === target;
+}
+
 function createMiddleware(fileName: string, content: string) {
 	return (req: IncomingMessage, res: ServerResponse, next: NextFn) => {
-		if (req.url !== `/${fileName}`) return next();
+		if (!matchPath(req.url, `/${fileName}`)) return next();
 		res.setHeader('Content-Type', 'text/plain');
 		res.setHeader('Cache-Control', 'no-cache');
 		res.end(content);
@@ -25,6 +32,9 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 	let siteBase = '/';
 	let htmlTags: HtmlTagDescriptor[] = [];
 
+	// Pre-compute dev content (no need to serialize on every request)
+	const devContent = devMode === 'same' ? serialize(options) : DEV_ROBOTS;
+
 	return {
 		name: PLUGIN_NAME,
 		enforce: 'post',
@@ -32,49 +42,38 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 		configResolved(config) {
 			siteBase = config.base ?? '/';
 
-			// Resolve meta tags once at config time
 			if (options.meta !== undefined) {
 				const tags = normalizeMeta(options.meta, options.preset);
 				htmlTags = metaTagsToHtml(tags);
 			}
 		},
 
-		// Serve robots.txt in dev mode
 		configureServer(server) {
 			if (devMode === false) return;
-
-			server.middlewares.use(
-				createMiddleware(
-					fileName,
-					devMode === 'disallowAll' ? DEV_ROBOTS : serialize(options),
-				),
-			);
+			server.middlewares.use(createMiddleware(fileName, devContent));
 		},
 
-		// Also serve in preview mode
 		configurePreviewServer(server) {
 			if (devMode === false) return;
-
-			server.middlewares.use(
-				createMiddleware(
-					fileName,
-					devMode === 'disallowAll' ? DEV_ROBOTS : serialize(options),
-				),
-			);
+			server.middlewares.use(createMiddleware(fileName, devContent));
 		},
 
-		// Inject <meta name="robots"> tags into HTML
 		transformIndexHtml() {
 			if (htmlTags.length === 0) return [];
 			return htmlTags;
 		},
 
-		// Emit robots.txt at build time
 		generateBundle() {
 			const resolved = { ...options };
 
 			if (resolved.sitemap === true) {
-				resolved.sitemap = `${siteBase}sitemap.xml`.replace(/\/+/g, '/');
+				const sitemapPath = `${siteBase}sitemap.xml`.replace(/\/+/g, '/');
+				this.warn(
+					`sitemap: true resolved to relative path "${sitemapPath}". `
+						+ 'Sitemap directives should be absolute URLs per spec. '
+						+ 'Pass a full URL like "https://example.com/sitemap.xml" for production.',
+				);
+				resolved.sitemap = sitemapPath;
 			}
 
 			this.emitFile({

@@ -45,7 +45,7 @@
     "tar": "TARBALL=$(bun pm pack --quiet | tr -d '\\n'); echo \"tar=${TARBALL}\" >> ${GITHUB_OUTPUT:-/dev/stdout}",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",

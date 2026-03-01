@@ -19,5 +19,5 @@ jobs:
       - name: Format sources
         run: bun fmt --allow-no-files --diff --excludes ".github"
       - name: Lint autofix
-        run: bun lint --fix --unsafe
+        run: bun lint --fix
       - uses: autofix-ci/action@v1

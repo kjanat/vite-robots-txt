@@ -1,7 +1,6 @@
 import type { HtmlTagDescriptor } from 'vite';
 import { AI_BOTS } from './presets.ts';
-import type { MetaDirective, MetaInput, MetaTag, Preset } from './types.ts';
-import { toArray } from './utils.ts';
+import { toArray, type MetaDirective, type MetaInput, type MetaTag, type Preset } from './types.ts';
 
 /** Derive meta tags from a preset */
 function presetMetaTags(preset: Preset): MetaTag[] {
@@ -11,12 +10,12 @@ function presetMetaTags(preset: Preset): MetaTag[] {
 
 		case 'blockAI':
 			return AI_BOTS.map((bot) => ({
-				name: bot as MetaTag['name'],
-				content: ['noindex', 'nofollow'] as MetaDirective[],
+				name: bot,
+				content: ['noindex', 'nofollow'],
 			}));
 
 		case 'searchOnly':
-			return [{ content: ['noindex', 'nofollow'] }];
+			return [{ content: ['index', 'follow'] }];
 
 		case 'allowAll':
 			return [{ content: ['index', 'follow'] }];

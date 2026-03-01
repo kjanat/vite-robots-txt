@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+---
+name: CI
+run-name: "CI \"${{ github.event.pull_request.title || github.event.head_commit.message || github.event_name }}\" by @${{ github.actor }}"
+on:
+  push: { branches: ["master"] }
+  pull_request:
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  check:
+    name: Test, typecheck, lint, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - run: bun i --frozen-lockfile
+      - run: bun typecheck
+      - run: bun lint
+      - run: bun test
+      - run: bun build

@@ -16,9 +16,15 @@ function matchPath(url: string | undefined, target: string): boolean {
 	return path === target;
 }
 
-function createMiddleware(fileName: string, content: string) {
+/** Join a URL base path with a filename via standard URL resolution */
+function joinPath(base: string, file: string): string {
+	const origin = `http://n${base.endsWith('/') ? base : `${base}/`}`;
+	return new URL(file, origin).pathname;
+}
+
+function createMiddleware(targetPath: string, content: string) {
 	return (req: IncomingMessage, res: ServerResponse, next: NextFn) => {
-		if (!matchPath(req.url, `/${fileName}`)) return next();
+		if (!matchPath(req.url, targetPath)) return next();
 		res.setHeader('Content-Type', 'text/plain');
 		res.setHeader('Cache-Control', 'no-cache');
 		res.end(content);
@@ -31,9 +37,8 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 
 	let siteBase = '/';
 	let htmlTags: HtmlTagDescriptor[] = [];
-
-	// Pre-compute dev content (no need to serialize on every request)
-	const devContent = devMode === 'same' ? serialize(options) : DEV_ROBOTS;
+	let devContent = '';
+	let servePath = '';
 
 	return {
 		name: PLUGIN_NAME,
@@ -41,6 +46,18 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 
 		configResolved(config) {
 			siteBase = config.base ?? '/';
+			servePath = joinPath(siteBase, fileName);
+
+			// Compute dev content after config is resolved so siteBase is available
+			if (devMode === 'disallowAll') {
+				devContent = DEV_ROBOTS;
+			} else if (devMode === 'same') {
+				const resolved = { ...options };
+			if (resolved.sitemap === true) {
+				resolved.sitemap = joinPath(siteBase, 'sitemap.xml');
+			}
+			devContent = serialize(resolved);
+			}
 
 			if (options.meta !== undefined) {
 				const tags = normalizeMeta(options.meta, options.preset);
@@ -50,12 +67,12 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 
 		configureServer(server) {
 			if (devMode === false) return;
-			server.middlewares.use(createMiddleware(fileName, devContent));
+			server.middlewares.use(createMiddleware(servePath, devContent));
 		},
 
 		configurePreviewServer(server) {
 			if (devMode === false) return;
-			server.middlewares.use(createMiddleware(fileName, devContent));
+			server.middlewares.use(createMiddleware(servePath, devContent));
 		},
 
 		transformIndexHtml() {
@@ -67,7 +84,7 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 			const resolved = { ...options };
 
 			if (resolved.sitemap === true) {
-				const sitemapPath = `${siteBase}sitemap.xml`.replace(/\/+/g, '/');
+				const sitemapPath = joinPath(siteBase, 'sitemap.xml');
 				this.warn(
 					`sitemap: true resolved to relative path "${sitemapPath}". `
 						+ 'Sitemap directives should be absolute URLs per spec. '

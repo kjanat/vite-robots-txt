@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { serialize } from '../serialize.ts';
+import { describe, expect, it } from 'bun:test';
+import { serialize } from '../src/serialize.ts';
 
 describe('serialize', () => {
 	it('defaults to allow all when no options', () => {
@@ -133,5 +133,31 @@ describe('serialize', () => {
 		// Header → blank → group1 → blank → group2 → blank → sitemap
 		const sections = result.trim().split('\n\n');
 		expect(sections).toHaveLength(4);
+	});
+
+	it('skips sitemap: true (resolved by plugin, not serialize)', () => {
+		const result = serialize({ preset: 'allowAll', sitemap: true });
+		expect(result).not.toContain('Sitemap:');
+	});
+
+	it('skips sitemap: false', () => {
+		const result = serialize({ preset: 'allowAll', sitemap: false });
+		expect(result).not.toContain('Sitemap:');
+	});
+
+	it('ignores invalid crawlDelay values', () => {
+		const nan = serialize({ policies: { userAgent: '*', allow: '/', crawlDelay: NaN } });
+		expect(nan).not.toContain('Crawl-delay');
+
+		const negative = serialize({ policies: { userAgent: '*', allow: '/', crawlDelay: -1 } });
+		expect(negative).not.toContain('Crawl-delay');
+
+		const inf = serialize({ policies: { userAgent: '*', allow: '/', crawlDelay: Infinity } });
+		expect(inf).not.toContain('Crawl-delay');
+	});
+
+	it('accepts crawlDelay: 0', () => {
+		const result = serialize({ policies: { userAgent: '*', allow: '/', crawlDelay: 0 } });
+		expect(result).toContain('Crawl-delay: 0');
 	});
 });

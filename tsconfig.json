@@ -22,10 +22,7 @@
 		// Stricter flags
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"noPropertyAccessFromIndexSignature": false,
-
-		"types": ["vitest/globals"]
+		"noPropertyAccessFromIndexSignature": false
 	},
-	"include": ["src"],
 	"exclude": ["dist"]
 }

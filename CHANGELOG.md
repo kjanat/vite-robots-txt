@@ -16,18 +16,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MetaDirective` type with autocomplete for all standard directives (`noindex`, `nofollow`, `noarchive`, `max-snippet:N`, etc.)
 - `MetaTag` type for explicit `<meta name="..." content="...">` configuration
 - `normalizeMeta()` and `metaTagsToHtml()` exported for standalone use
+- CI quality gate workflow (test, typecheck, lint, build on every push/PR)
+- Plugin unit tests covering middleware, path matching, base handling, devMode, meta injection, and asset emission
+- crawlDelay validation rejects NaN, negative, and Infinity values
 - Biome lint autofix step in CI autofix workflow
 - `@typescript/native-preview` (tsgo) for fast typechecking
 
 ### Changed
 
-- Shared `toArray()` extracted to `utils.ts` (was duplicated in serialize + meta)
-- Dev server content pre-computed at init instead of serialized per request
+- URL path joining uses `new URL()` API instead of manual string concatenation
+- `toArray()` co-located with `OneOrMany<T>` in `types.ts` (type + runtime normalizer together)
+- `presetPolicies` typed as `Readonly<Record<Preset, readonly PolicyRule[]>>`
+- Bot arrays use `satisfies readonly KnownBot[]` for type safety
+- Dev server content deferred to `configResolved` (siteBase now available)
 - `sitemap: true` now warns that directives should be absolute URLs per spec
+- Test runner migrated from vitest to `bun:test`; tests moved to `tests/`
+- Publish workflow hardened: `--frozen-lockfile`, test+typecheck gate, strict tag pattern
+- Autofix workflow: removed `--unsafe` flag from biome
 - Use `.ts` import extensions throughout source files
+
+### Removed
+
+- `utils.ts` — consolidated into `types.ts`
+- vitest dependency and configuration
+- Unnecessary type assertions (`as` casts) in serialize.ts and meta.ts
 
 ### Fixed
 
+- `searchOnly` meta preset emits `['index', 'follow']` (was incorrectly `['noindex', 'nofollow']`)
+- Publish workflow pipe operator (`|&` → `|`)
 - Dev middleware now strips query strings before path matching
 
 ## [0.1.0] - 2026-03-01

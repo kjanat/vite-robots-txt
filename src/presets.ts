@@ -1,4 +1,4 @@
-import type { PolicyRule, Preset } from './types.ts';
+import type { KnownBot, PolicyRule, Preset } from './types.ts';
 
 /** AI/LLM training crawlers to block */
 const AI_BOTS = [
@@ -14,7 +14,7 @@ const AI_BOTS = [
 	'Cohere-ai',
 	'Amazonbot',
 	'YouBot',
-] as const;
+] as const satisfies readonly KnownBot[];
 
 /** Major search engine crawlers */
 const SEARCH_ENGINES = [
@@ -25,9 +25,9 @@ const SEARCH_ENGINES = [
 	'Applebot',
 	'Baiduspider',
 	'YandexBot',
-] as const;
+] as const satisfies readonly KnownBot[];
 
-const presetPolicies: Record<Preset, PolicyRule[]> = {
+const presetPolicies: Readonly<Record<Preset, readonly PolicyRule[]>> = {
 	allowAll: [{ userAgent: '*', allow: '/' }],
 
 	disallowAll: [{ userAgent: '*', disallow: '/' }],

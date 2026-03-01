@@ -13,6 +13,12 @@
 /** A single value or array of values — for ergonomic config */
 type OneOrMany<T> = T | T[];
 
+/** Normalize `OneOrMany<T>` to `T[]` */
+function toArray<T>(value: OneOrMany<T> | undefined): T[] {
+	if (value === undefined) return [];
+	return Array.isArray(value) ? value : [value];
+}
+
 /** Known bot identifiers for type-safe presets */
 type KnownBot =
 	| 'Googlebot'
@@ -225,4 +231,5 @@ interface RobotsTxtOptions {
 // Exports
 // ---------------------------------------------------------------------------
 
+export { toArray };
 export type { KnownBot, MetaDirective, MetaInput, MetaTag, OneOrMany, PolicyRule, Preset, RobotsTxtOptions, UserAgent };

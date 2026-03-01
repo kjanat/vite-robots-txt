@@ -1,6 +1,5 @@
 import { presetPolicies } from './presets.ts';
-import type { OneOrMany, PolicyRule, RobotsTxtOptions } from './types.ts';
-import { toArray } from './utils.ts';
+import { toArray, type PolicyRule, type RobotsTxtOptions } from './types.ts';
 
 /** Serialize a single policy rule group into robots.txt lines */
 function serializePolicy(rule: PolicyRule): string {
@@ -22,7 +21,7 @@ function serializePolicy(rule: PolicyRule): string {
 		lines.push(`Allow: ${path}`);
 	}
 
-	if (rule.crawlDelay !== undefined) {
+	if (rule.crawlDelay !== undefined && Number.isFinite(rule.crawlDelay) && rule.crawlDelay >= 0) {
 		lines.push(`Crawl-delay: ${rule.crawlDelay}`);
 	}
 
@@ -65,7 +64,7 @@ function serialize(options: RobotsTxtOptions): string {
 
 	// Sitemap directives (skip boolean — resolved in plugin.ts)
 	if (options.sitemap && options.sitemap !== true) {
-		for (const url of toArray(options.sitemap as OneOrMany<string>)) {
+		for (const url of toArray(options.sitemap)) {
 			sections.push(`Sitemap: ${url}`);
 		}
 	}

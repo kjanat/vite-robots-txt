@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { metaTagsToHtml, normalizeMeta } from '../meta.ts';
-import { AI_BOTS } from '../presets.ts';
-import type { MetaTag } from '../types.ts';
+import { describe, expect, it } from 'bun:test';
+import { metaTagsToHtml, normalizeMeta } from '../src/meta.ts';
+import { AI_BOTS } from '../src/presets.ts';
+import type { MetaTag } from '../src/types.ts';
 
 describe('normalizeMeta', () => {
 	describe('boolean shorthand', () => {
@@ -19,7 +19,8 @@ describe('normalizeMeta', () => {
 			expect(tags).toHaveLength(AI_BOTS.length);
 			for (const tag of tags) {
 				expect(tag.content).toEqual(['noindex', 'nofollow']);
-				expect(AI_BOTS).toContain(tag.name);
+				expect(tag.name).toBeDefined();
+				expect(AI_BOTS as readonly string[]).toContain(tag.name as string);
 			}
 		});
 
@@ -33,9 +34,9 @@ describe('normalizeMeta', () => {
 			expect(tags).toEqual([{ content: ['index', 'follow'] }]);
 		});
 
-		it('meta: true with searchOnly generates global noindex', () => {
+		it('meta: true with searchOnly generates global index/follow', () => {
 			const tags = normalizeMeta(true, 'searchOnly');
-			expect(tags).toEqual([{ content: ['noindex', 'nofollow'] }]);
+			expect(tags).toEqual([{ content: ['index', 'follow'] }]);
 		});
 	});
 

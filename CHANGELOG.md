@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI quality gate workflow (test, typecheck, lint, build on every push/PR)
 - Plugin unit tests covering middleware, path matching, base handling, devMode, meta injection, and asset emission
 - crawlDelay validation rejects NaN, negative, and Infinity values
+- NPM version badge in README
 - Biome lint autofix step in CI autofix workflow
 - `@typescript/native-preview` (tsgo) for fast typechecking
 

@@ -1,5 +1,7 @@
 # vite-robots-txt
 
+[![NPM Version](https://img.shields.io/npm/v/vite-robots-txt?logo=npm&labelColor=CB3837&color=black)](https://www.npmjs.com/package/vite-robots-txt)
+
 Vite plugin to generate `robots.txt` and inject `<meta name="robots">` tags — with presets, per-bot rules, and dev mode blocking.
 
 ## Install

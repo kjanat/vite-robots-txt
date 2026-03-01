@@ -1,6 +1,6 @@
 import type { HtmlTagDescriptor } from 'vite';
 import { AI_BOTS } from './presets.ts';
-import { toArray, type MetaDirective, type MetaInput, type MetaTag, type Preset } from './types.ts';
+import { type MetaDirective, type MetaInput, type MetaTag, type Preset, toArray } from './types.ts';
 
 /** Derive meta tags from a preset */
 function presetMetaTags(preset: Preset): MetaTag[] {

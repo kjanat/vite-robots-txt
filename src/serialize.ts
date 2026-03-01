@@ -1,5 +1,5 @@
 import { presetPolicies } from './presets.ts';
-import { toArray, type PolicyRule, type RobotsTxtOptions } from './types.ts';
+import { type PolicyRule, type RobotsTxtOptions, toArray } from './types.ts';
 
 /** Serialize a single policy rule group into robots.txt lines */
 function serializePolicy(rule: PolicyRule): string {

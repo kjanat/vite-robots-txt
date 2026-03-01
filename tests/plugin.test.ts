@@ -1,5 +1,5 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import { describe, expect, it, mock } from 'bun:test';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ResolvedConfig } from 'vite';
 import { robotsTxt } from '../src/plugin.ts';
 
@@ -35,7 +35,9 @@ function callMiddleware(
 	const req = { url } as IncomingMessage;
 	let endBody: string | undefined;
 	const setHeader = mock((_k: string, _v: string) => {});
-	const end = mock((body?: string) => { endBody = body; });
+	const end = mock((body?: string) => {
+		endBody = body;
+	});
 	const res = { setHeader, end } as unknown as ServerResponse;
 	const next = mock(() => {});
 	handler(req, res, next);
@@ -45,10 +47,15 @@ function callMiddleware(
 type MiddlewareHandler = (req: IncomingMessage, res: ServerResponse, next: () => void) => void;
 
 /** Get the middleware handler registered on a fake server */
-function getMiddlewareHandler(plugin: ReturnType<typeof robotsTxt>, hookName = 'configureServer'): MiddlewareHandler | undefined {
+function getMiddlewareHandler(
+	plugin: ReturnType<typeof robotsTxt>,
+	hookName = 'configureServer',
+): MiddlewareHandler | undefined {
 	// biome-ignore lint/suspicious/noExplicitAny: capturing untyped middleware registration
 	let captured: any;
-	const use = mock((fn: unknown) => { captured = fn; });
+	const use = mock((fn: unknown) => {
+		captured = fn;
+	});
 	const server = { middlewares: { use } };
 	hook(plugin, hookName)(server);
 	return captured as MiddlewareHandler | undefined;
@@ -238,14 +245,22 @@ describe('transformIndexHtml', () => {
 // generateBundle
 // ---------------------------------------------------------------------------
 
-interface EmittedAsset { type: string; fileName: string; source: string }
+interface EmittedAsset {
+	type: string;
+	fileName: string;
+	source: string;
+}
 
 /** Create a fake Rollup plugin context that captures emitFile/warn calls */
 function fakeBundleCtx() {
 	const captured: { emitted?: EmittedAsset; warned?: string } = {};
 	const ctx = {
-		warn: mock((msg: string) => { captured.warned = msg; }),
-		emitFile: mock((asset: EmittedAsset) => { captured.emitted = asset; }),
+		warn: mock((msg: string) => {
+			captured.warned = msg;
+		}),
+		emitFile: mock((asset: EmittedAsset) => {
+			captured.emitted = asset;
+		}),
 	};
 	return { ctx, captured };
 }

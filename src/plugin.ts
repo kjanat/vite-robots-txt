@@ -53,10 +53,10 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 				devContent = DEV_ROBOTS;
 			} else if (devMode === 'same') {
 				const resolved = { ...options };
-			if (resolved.sitemap === true) {
-				resolved.sitemap = joinPath(siteBase, 'sitemap.xml');
-			}
-			devContent = serialize(resolved);
+				if (resolved.sitemap === true) {
+					resolved.sitemap = joinPath(siteBase, 'sitemap.xml');
+				}
+				devContent = serialize(resolved);
 			}
 
 			if (options.meta !== undefined) {

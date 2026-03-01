@@ -2,6 +2,7 @@
  * vite-robots-txt — Type definitions
  *
  * Robots.txt spec: https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt
+ * Meta robots spec: https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag
  * Non-standard extensions: Crawl-delay (Bing/Yandex), Host (Yandex), Clean-param (Yandex)
  */
 
@@ -45,7 +46,7 @@ type KnownBot =
 type UserAgent = KnownBot | (string & {});
 
 // ---------------------------------------------------------------------------
-// Policy (per user-agent group)
+// Policy (per user-agent group) — robots.txt output
 // ---------------------------------------------------------------------------
 
 /** Rules for one or more user-agents */
@@ -68,6 +69,60 @@ interface PolicyRule {
 	/** Inline comments placed above this rule group */
 	comment?: OneOrMany<string>;
 }
+
+// ---------------------------------------------------------------------------
+// Meta robots — HTML <meta> tag output
+// ---------------------------------------------------------------------------
+
+/** Standard meta robots directives with autocomplete */
+type MetaDirective =
+	| 'index'
+	| 'noindex'
+	| 'follow'
+	| 'nofollow'
+	| 'all'
+	| 'none'
+	| 'noarchive'
+	| 'nocache'
+	| 'nosnippet'
+	| 'noimageindex'
+	| `max-snippet:${number}`
+	| `max-image-preview:${'none' | 'standard' | 'large'}`
+	| `max-video-preview:${number}`
+	| (string & {}); // escape hatch
+
+/**
+ * A single `<meta name="..." content="...">` tag.
+ *
+ * @example { name: 'robots', content: ['noindex', 'nofollow'] }
+ * @example { name: 'GPTBot', content: 'noindex' }
+ */
+interface MetaTag {
+	/**
+	 * The `name` attribute. `'robots'` targets all bots.
+	 *
+	 * @default 'robots'
+	 */
+	name?: 'robots' | UserAgent;
+
+	/** One or more directives for the `content` attribute. */
+	content: OneOrMany<MetaDirective>;
+}
+
+/**
+ * Meta robots configuration.
+ *
+ * Shorthand forms are normalized internally:
+ * - `true` → derive meta tags from the active preset
+ * - `'noindex'` → `{ tags: [{ name: 'robots', content: 'noindex' }] }`
+ * - `['noindex', 'nofollow']` → `{ tags: [{ name: 'robots', content: ['noindex', 'nofollow'] }] }`
+ * - `MetaTag` → `{ tags: [tag] }`
+ * - `MetaTag[]` → `{ tags }`
+ */
+type MetaInput =
+	| boolean
+	| OneOrMany<MetaDirective>
+	| OneOrMany<MetaTag>;
 
 // ---------------------------------------------------------------------------
 // Presets
@@ -103,6 +158,24 @@ interface RobotsTxtOptions {
 	 * Shorthand: pass a single `PolicyRule` instead of an array.
 	 */
 	policies?: OneOrMany<PolicyRule>;
+
+	/**
+	 * Inject `<meta name="robots">` tags into HTML via `transformIndexHtml`.
+	 *
+	 * Multiple shorthand forms for ergonomic config:
+	 *
+	 * @example true                          // derive from preset
+	 * @example 'noindex'                     // global noindex
+	 * @example ['noindex', 'nofollow']       // global noindex + nofollow
+	 * @example { name: 'GPTBot', content: 'noindex' }  // per-bot
+	 * @example [                             // multiple tags
+	 *   { content: ['index', 'follow'] },
+	 *   { name: 'GPTBot', content: 'noindex' },
+	 * ]
+	 *
+	 * @default undefined (no meta tags)
+	 */
+	meta?: MetaInput;
 
 	/**
 	 * Sitemap URL(s) — absolute URLs written as global `Sitemap:` directives.
@@ -152,4 +225,4 @@ interface RobotsTxtOptions {
 // Exports
 // ---------------------------------------------------------------------------
 
-export type { KnownBot, OneOrMany, PolicyRule, Preset, RobotsTxtOptions, UserAgent };
+export type { KnownBot, MetaDirective, MetaInput, MetaTag, OneOrMany, PolicyRule, Preset, RobotsTxtOptions, UserAgent };

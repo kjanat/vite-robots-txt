@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { Plugin } from 'vite';
+import type { HtmlTagDescriptor, Plugin } from 'vite';
+import { metaTagsToHtml, normalizeMeta } from './meta.js';
 import { serialize } from './serialize.js';
 import type { RobotsTxtOptions } from './types.js';
 
@@ -20,9 +21,9 @@ function createMiddleware(fileName: string, content: string) {
 function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 	const fileName = options.fileName ?? 'robots.txt';
 	const devMode = options.devMode ?? 'disallowAll';
-	let siteBase = '/';
 
-	const devContent = devMode === 'disallowAll' ? DEV_ROBOTS : serialize(options);
+	let siteBase = '/';
+	let htmlTags: HtmlTagDescriptor[] = [];
 
 	return {
 		name: PLUGIN_NAME,
@@ -30,18 +31,45 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 
 		configResolved(config) {
 			siteBase = config.base ?? '/';
+
+			// Resolve meta tags once at config time
+			if (options.meta !== undefined) {
+				const tags = normalizeMeta(options.meta, options.preset);
+				htmlTags = metaTagsToHtml(tags);
+			}
 		},
 
+		// Serve robots.txt in dev mode
 		configureServer(server) {
 			if (devMode === false) return;
-			server.middlewares.use(createMiddleware(fileName, devContent));
+
+			server.middlewares.use(
+				createMiddleware(
+					fileName,
+					devMode === 'disallowAll' ? DEV_ROBOTS : serialize(options),
+				),
+			);
 		},
 
+		// Also serve in preview mode
 		configurePreviewServer(server) {
 			if (devMode === false) return;
-			server.middlewares.use(createMiddleware(fileName, devContent));
+
+			server.middlewares.use(
+				createMiddleware(
+					fileName,
+					devMode === 'disallowAll' ? DEV_ROBOTS : serialize(options),
+				),
+			);
 		},
 
+		// Inject <meta name="robots"> tags into HTML
+		transformIndexHtml() {
+			if (htmlTags.length === 0) return [];
+			return htmlTags;
+		},
+
+		// Emit robots.txt at build time
 		generateBundle() {
 			const resolved = { ...options };
 

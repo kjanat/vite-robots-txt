@@ -1,6 +1,6 @@
 # vite-robots-txt
 
-Vite plugin to generate `robots.txt` with presets, per-bot rules, and dev mode blocking.
+Vite plugin to generate `robots.txt` and inject `<meta name="robots">` tags — with presets, per-bot rules, and dev mode blocking.
 
 ## Install
 
@@ -83,12 +83,61 @@ robotsTxt({
 });
 ```
 
+## Meta robots tags
+
+Inject `<meta name="robots">` tags into your HTML for indexing control. Works alongside or independently from `robots.txt`.
+
+### Derive from preset
+
+```ts
+// Automatically generates <meta> tags matching the preset
+robotsTxt({ preset: 'blockAI', meta: true });
+// → <meta name="GPTBot" content="noindex, nofollow">
+// → <meta name="ClaudeBot" content="noindex, nofollow">
+// → ... (all 12 AI bots)
+```
+
+### Global directives
+
+```ts
+// Single directive
+robotsTxt({ meta: 'noindex' });
+// → <meta name="robots" content="noindex">
+
+// Multiple directives
+robotsTxt({ meta: ['noindex', 'nofollow'] });
+// → <meta name="robots" content="noindex, nofollow">
+```
+
+### Per-bot tags
+
+```ts
+robotsTxt({
+	meta: [
+		{ content: ['index', 'follow'] }, // <meta name="robots" ...>
+		{ name: 'GPTBot', content: 'noindex' }, // <meta name="GPTBot" ...>
+		{ name: 'googlebot', content: 'max-image-preview:large' }, // <meta name="googlebot" ...>
+	],
+});
+```
+
+### Combined: robots.txt + meta tags
+
+```ts
+robotsTxt({
+	preset: 'blockAI',
+	meta: true,
+	sitemap: 'https://example.com/sitemap.xml',
+});
+```
+
 ## Options
 
 | Option     | Type                                                       | Default         | Description                              |
 | ---------- | ---------------------------------------------------------- | --------------- | ---------------------------------------- |
 | `preset`   | `'allowAll' \| 'disallowAll' \| 'blockAI' \| 'searchOnly'` | —               | Start from a preset                      |
 | `policies` | `PolicyRule \| PolicyRule[]`                               | —               | Custom policy rules                      |
+| `meta`     | `boolean \| string \| string[] \| MetaTag \| MetaTag[]`    | —               | Inject `<meta>` robots tags into HTML    |
 | `sitemap`  | `string \| string[] \| boolean`                            | —               | Sitemap URL(s) or `true` for auto-detect |
 | `host`     | `string`                                                   | —               | Yandex `Host:` directive                 |
 | `fileName` | `string`                                                   | `'robots.txt'`  | Output file name                         |
@@ -105,19 +154,37 @@ robotsTxt({
 | `crawlDelay` | `number`             | Seconds between requests (Bing/Yandex) |
 | `comment`    | `string \| string[]` | Comments above the rule group          |
 
+### MetaTag
+
+| Field     | Type                 | Default    | Description                    |
+| --------- | -------------------- | ---------- | ------------------------------ |
+| `name`    | `'robots' \| string` | `'robots'` | Bot name or `'robots'` for all |
+| `content` | `string \| string[]` | —          | Meta directives                |
+
+### Available meta directives
+
+`index`, `noindex`, `follow`, `nofollow`, `all`, `none`, `noarchive`, `nocache`, `nosnippet`, `noimageindex`, `max-snippet:N`, `max-image-preview:none|standard|large`, `max-video-preview:N`
+
 ## Dev mode
 
 By default, the plugin serves a `Disallow: /` robots.txt during development to prevent indexing of your dev server. Set `devMode: 'same'` to serve the same config as production, or `false` to disable.
 
-## Standalone serializer
+## Standalone utilities
 
 ```ts
-import { serialize } from 'vite-robots-txt';
+import { metaTagsToHtml, normalizeMeta, serialize } from 'vite-robots-txt';
 
+// Generate robots.txt string
 const txt = serialize({
 	preset: 'blockAI',
 	sitemap: 'https://example.com/sitemap.xml',
 });
+
+// Normalize meta input to MetaTag[]
+const tags = normalizeMeta(true, 'blockAI');
+
+// Convert to Vite HtmlTagDescriptor[]
+const html = metaTagsToHtml(tags);
 ```
 
 ## Exports
@@ -126,6 +193,8 @@ const txt = serialize({
 | --------------------- | ---------------------------------------- |
 | `robotsTxt` (default) | Vite plugin factory                      |
 | `serialize`           | Standalone robots.txt serializer         |
+| `normalizeMeta`       | Normalize meta input to `MetaTag[]`      |
+| `metaTagsToHtml`      | Convert `MetaTag[]` to Vite HTML tags    |
 | `AI_BOTS`             | Array of known AI crawler user-agents    |
 | `SEARCH_ENGINES`      | Array of major search engine user-agents |
 | `presetPolicies`      | Preset policy definitions                |

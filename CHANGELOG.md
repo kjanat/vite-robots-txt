@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `meta` option to inject `<meta name="robots">` tags into HTML via `transformIndexHtml`
+- `meta: true` derives meta tags from the active preset (e.g. `blockAI` → `noindex` per AI bot)
+- Multiple shorthand forms: `'noindex'`, `['noindex', 'nofollow']`, `MetaTag`, `MetaTag[]`
+- Per-bot meta tags: `{ name: 'GPTBot', content: 'noindex' }`
+- `MetaDirective` type with autocomplete for all standard directives (`noindex`, `nofollow`, `noarchive`, `max-snippet:N`, etc.)
+- `MetaTag` type for explicit `<meta name="..." content="...">` configuration
+- `normalizeMeta()` and `metaTagsToHtml()` exported for standalone use
+
 ## [0.1.0] - 2026-03-01
 
 ### Added

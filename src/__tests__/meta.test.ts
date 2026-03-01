@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { metaTagsToHtml, normalizeMeta } from '../meta.js';
-import { AI_BOTS } from '../presets.js';
+import { metaTagsToHtml, normalizeMeta } from '../meta.ts';
+import { AI_BOTS } from '../presets.ts';
 
 describe('normalizeMeta', () => {
 	describe('boolean shorthand', () => {

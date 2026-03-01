@@ -1,4 +1,4 @@
-import type { PolicyRule, Preset } from './types.js';
+import type { PolicyRule, Preset } from './types.ts';
 
 /** AI/LLM training crawlers to block */
 const AI_BOTS = [

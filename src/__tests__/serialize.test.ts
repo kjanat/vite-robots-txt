@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { serialize } from '../serialize.js';
+import { serialize } from '../serialize.ts';
 
 describe('serialize', () => {
 	it('defaults to allow all when no options', () => {

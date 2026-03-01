@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { HtmlTagDescriptor, Plugin } from 'vite';
-import { metaTagsToHtml, normalizeMeta } from './meta.js';
-import { serialize } from './serialize.js';
-import type { RobotsTxtOptions } from './types.js';
+import { metaTagsToHtml, normalizeMeta } from './meta.ts';
+import { serialize } from './serialize.ts';
+import type { RobotsTxtOptions } from './types.ts';
 
 const PLUGIN_NAME = 'vite-robots-txt';
 const DEV_ROBOTS = 'User-agent: *\nDisallow: /\n';

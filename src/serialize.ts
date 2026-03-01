@@ -1,5 +1,5 @@
-import { presetPolicies } from './presets.js';
-import type { OneOrMany, PolicyRule, RobotsTxtOptions } from './types.js';
+import { presetPolicies } from './presets.ts';
+import type { OneOrMany, PolicyRule, RobotsTxtOptions } from './types.ts';
 
 /** Normalize `OneOrMany<T>` to `T[]` */
 function toArray<T>(value: OneOrMany<T> | undefined): T[] {

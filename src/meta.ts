@@ -1,6 +1,6 @@
 import type { HtmlTagDescriptor } from 'vite';
-import { AI_BOTS } from './presets.js';
-import type { MetaDirective, MetaInput, MetaTag, OneOrMany, Preset } from './types.js';
+import { AI_BOTS } from './presets.ts';
+import type { MetaDirective, MetaInput, MetaTag, OneOrMany, Preset } from './types.ts';
 
 /** Normalize `OneOrMany<T>` to `T[]` */
 function toArray<T>(value: OneOrMany<T> | undefined): T[] {

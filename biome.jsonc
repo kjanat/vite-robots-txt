@@ -1,9 +1,10 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.4.4/schema.json",
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true,
+		"defaultBranch": "master",
 	},
 	"files": {
 		"includes": ["**", "!!**/dist"],
@@ -21,7 +22,7 @@
 		"enabled": true,
 		"actions": {
 			"source": {
-				"organizeImports": "on",
+				"organizeImports": "off",
 			},
 		},
 	},

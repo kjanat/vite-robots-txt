@@ -16,6 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MetaDirective` type with autocomplete for all standard directives (`noindex`, `nofollow`, `noarchive`, `max-snippet:N`, etc.)
 - `MetaTag` type for explicit `<meta name="..." content="...">` configuration
 - `normalizeMeta()` and `metaTagsToHtml()` exported for standalone use
+- Biome lint autofix step in CI autofix workflow
+- `@typescript/native-preview` (tsgo) for fast typechecking
+
+### Changed
+
+- Shared `toArray()` extracted to `utils.ts` (was duplicated in serialize + meta)
+- Dev server content pre-computed at init instead of serialized per request
+- `sitemap: true` now warns that directives should be absolute URLs per spec
+- Use `.ts` import extensions throughout source files
+
+### Fixed
+
+- Dev middleware now strips query strings before path matching
 
 ## [0.1.0] - 2026-03-01
 

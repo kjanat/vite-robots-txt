@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { metaTagsToHtml, normalizeMeta } from '../meta.ts';
 import { AI_BOTS } from '../presets.ts';
+import type { MetaTag } from '../types.ts';
 
 describe('normalizeMeta', () => {
 	describe('boolean shorthand', () => {
@@ -72,10 +73,10 @@ describe('normalizeMeta', () => {
 
 	describe('MetaTag array', () => {
 		it('multiple MetaTags pass through', () => {
-			const input = [
-				{ content: ['index', 'follow'] as const },
-				{ name: 'GPTBot' as const, content: 'noindex' as const },
-				{ name: 'Google-Extended' as const, content: ['noindex', 'nofollow'] as const },
+			const input: MetaTag[] = [
+				{ content: ['index', 'follow'] },
+				{ name: 'GPTBot', content: 'noindex' },
+				{ name: 'Google-Extended', content: ['noindex', 'nofollow'] },
 			];
 			const tags = normalizeMeta(input);
 			expect(tags).toEqual(input);
@@ -123,7 +124,7 @@ describe('metaTagsToHtml', () => {
 	it('blockAI preset meta covers all known AI bots', () => {
 		const tags = normalizeMeta(true, 'blockAI');
 		const html = metaTagsToHtml(tags);
-		const names = html.map((h) => h.attrs?.['name']);
+		const names = html.map((h) => h.attrs?.name);
 
 		// Every AI bot should have a meta tag
 		for (const bot of AI_BOTS) {
@@ -132,17 +133,17 @@ describe('metaTagsToHtml', () => {
 
 		// All should be noindex, nofollow
 		for (const tag of html) {
-			expect(tag.attrs?.['content']).toBe('noindex, nofollow');
+			expect(tag.attrs?.content).toBe('noindex, nofollow');
 		}
 	});
 
 	it('handles max-snippet directive correctly', () => {
 		const html = metaTagsToHtml([{ content: ['noindex', 'max-snippet:150'] }]);
-		expect(html[0]?.attrs?.['content']).toBe('noindex, max-snippet:150');
+		expect(html[0]?.attrs?.content).toBe('noindex, max-snippet:150');
 	});
 
 	it('handles max-image-preview directive correctly', () => {
 		const html = metaTagsToHtml([{ content: 'max-image-preview:large' }]);
-		expect(html[0]?.attrs?.['content']).toBe('max-image-preview:large');
+		expect(html[0]?.attrs?.content).toBe('max-image-preview:large');
 	});
 });

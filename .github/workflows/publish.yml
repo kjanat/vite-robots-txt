@@ -37,7 +37,10 @@ jobs:
       - run: bun test
 
       - id: tarball
-        run: bun bd && bun tar
+        run: |
+          bun bd
+          TARBALL="$(bun run --silent tar)"
+          echo "tar=${TARBALL}" | tee -a "$GITHUB_OUTPUT"
 
       # bun publish lacks --provenance; use npm for signed provenance
       - run: npm i -g npm

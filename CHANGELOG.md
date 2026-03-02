@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-02
+
 ### Added
 
 - `meta` option to inject `<meta name="robots">` tags into HTML via `transformIndexHtml`
@@ -40,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `prepack`/`postpack`/`prepublishOnly` lifecycle scripts for clean tarballs
 - Tar script simplified — `GITHUB_OUTPUT` handling moved to workflow
 - Test runner migrated from vitest to `bun:test`; tests moved to `tests/`
-- Publish workflow hardened: `--frozen-lockfile`, test+typecheck gate, strict tag pattern
+- Publish workflow: `--frozen-lockfile`, strict tag pattern, prerelease `next`/`latest` tag via `actions/github-script`, `bun i -g npm`, rely on `prepublishOnly` for test+typecheck gate
 - Autofix workflow: removed `--unsafe` flag from biome
 - Use `.ts` import extensions throughout source files
 
@@ -83,5 +85,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full TypeScript types with JSDoc documentation
 - Vite 5, 6, and 7 peer dependency support
 
-[Unreleased]: https://github.com/kjanat/vite-robots-txt/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/kjanat/vite-robots-txt/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/kjanat/vite-robots-txt/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/kjanat/vite-robots-txt/releases/tag/v0.1.0

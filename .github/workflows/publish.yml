@@ -37,7 +37,7 @@ jobs:
       - run: bun test
 
       - id: tarball
-        run: bun build:pkg && bun tar
+        run: bun bd && bun tar
 
       # bun publish lacks --provenance; use npm for signed provenance
       - run: npm i -g npm

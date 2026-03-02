@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bot arrays use `satisfies readonly KnownBot[]` for type safety
 - Dev server content deferred to `configResolved` (siteBase now available)
 - `sitemap: true` now warns that directives should be absolute URLs per spec
+- tsdown config: ESM-only (drop CJS), unbundle, DCE minify, publint + attw checks
 - Test runner migrated from vitest to `bun:test`; tests moved to `tests/`
 - Publish workflow hardened: `--frozen-lockfile`, test+typecheck gate, strict tag pattern
 - Autofix workflow: removed `--unsafe` flag from biome
@@ -43,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- CJS output — Vite is ESM-only, CJS was dead weight
 - `utils.ts` — consolidated into `types.ts`
 - vitest dependency and configuration
 - Unnecessary type assertions (`as` casts) in serialize.ts and meta.ts

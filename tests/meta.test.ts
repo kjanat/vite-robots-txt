@@ -58,6 +58,14 @@ describe('normalizeMeta', () => {
 		});
 	});
 
+	describe('unknown preset fallback', () => {
+		it('meta: true with unknown preset returns empty', () => {
+			// biome-ignore lint/suspicious/noExplicitAny: testing exhaustive switch default branch
+			const tags = normalizeMeta(true, 'nonexistent' as any);
+			expect(tags).toEqual([]);
+		});
+	});
+
 	describe('MetaTag object', () => {
 		it('single MetaTag wraps in array', () => {
 			const tag = { name: 'GPTBot' as const, content: 'noindex' as const };

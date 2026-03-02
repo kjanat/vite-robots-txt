@@ -1,7 +1,19 @@
+/**
+ * Robots.txt serializer — converts {@link RobotsTxtOptions} into a robots.txt string.
+ *
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt Robots.txt spec}
+ * @module
+ */
+
 import { presetPolicies } from './presets.ts';
 import { type PolicyRule, type RobotsTxtOptions, toArray } from './types.ts';
 
-/** Serialize a single policy rule group into robots.txt lines */
+/**
+ * Serialize a single {@link PolicyRule} into robots.txt lines.
+ *
+ * @param rule - The policy rule to serialize.
+ * @returns A string containing the robots.txt lines for this rule group.
+ */
 function serializePolicy(rule: PolicyRule): string {
 	const lines: string[] = [];
 
@@ -28,7 +40,25 @@ function serializePolicy(rule: PolicyRule): string {
 	return lines.join('\n');
 }
 
-/** Build the full robots.txt content from resolved options */
+/**
+ * Build the full robots.txt content from resolved options.
+ *
+ * Applies preset rules first (if any), then user-supplied policies,
+ * followed by global directives (`Host:`, `Sitemap:`).
+ *
+ * @param options - The resolved plugin options.
+ * @returns The complete robots.txt file content.
+ *
+ * @example
+ * ```ts
+ * import { serialize } from 'vite-robots-txt';
+ *
+ * const txt = serialize({
+ *   preset: 'blockAI',
+ *   sitemap: 'https://example.com/sitemap.xml',
+ * });
+ * ```
+ */
 function serialize(options: RobotsTxtOptions): string {
 	const sections: string[] = [];
 

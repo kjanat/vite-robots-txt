@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `normalizeMeta()` and `metaTagsToHtml()` exported for standalone use
 - CI quality gate workflow (test, typecheck, lint, build on every push/PR)
 - Plugin unit tests covering middleware, path matching, base handling, devMode, meta injection, and asset emission
+- 16 new AI crawlers: `OAI-SearchBot`, `Claude-SearchBot`, `Claude-User`, `GoogleOther`, `Google-CloudVertexBot`, `meta-externalagent`, `meta-externalfetcher`, `FacebookBot`, `Applebot-Extended`, `Perplexity-User`, `cohere-training-data-crawler`, `Ai2Bot-Dolma`, `PetalBot`, `Diffbot`, `omgili`, `Timpibot`
+- `Bravebot` added to `SEARCH_ENGINES`
+- JSDoc with `@see` source links on all exported symbols, types, and bot entries
 - crawlDelay validation rejects NaN, negative, and Infinity values
 - NPM version badge in README
 - Biome lint autofix step in CI autofix workflow
@@ -28,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - URL path joining uses `new URL()` API instead of manual string concatenation
 - `toArray()` co-located with `OneOrMany<T>` in `types.ts` (type + runtime normalizer together)
 - `presetPolicies` typed as `Readonly<Record<Preset, readonly PolicyRule[]>>`
+- `AI_BOTS` expanded from 12 to 28 entries; `SEARCH_ENGINES` from 7 to 8
+- Legacy bots (`Claude-Web`, `anthropic-ai`, `Cohere-ai`, `Slurp`) marked `@deprecated` in JSDoc
 - Bot arrays use `satisfies readonly KnownBot[]` for type safety
 - Dev server content deferred to `configResolved` (siteBase now available)
 - `sitemap: true` now warns that directives should be absolute URLs per spec

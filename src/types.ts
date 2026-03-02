@@ -1,78 +1,176 @@
 /**
- * vite-robots-txt — Type definitions
+ * Type definitions for vite-robots-txt.
  *
- * Robots.txt spec: https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt
- * Meta robots spec: https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag
- * Non-standard extensions: Crawl-delay (Bing/Yandex), Host (Yandex), Clean-param (Yandex)
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt Robots.txt spec}
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag Meta robots spec}
+ * @see {@link https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0 Crawl-delay (Bing)}
+ * @see {@link https://yandex.com/support/webmaster/robot-workings/check-yandex-robots.html Host / Crawl-delay (Yandex)}
+ * @module
  */
 
 // ---------------------------------------------------------------------------
 // Primitives
 // ---------------------------------------------------------------------------
 
-/** A single value or array of values — for ergonomic config */
+/**
+ * A single value or array of values — for ergonomic config.
+ *
+ * Accepts `T` or `T[]` so users don't have to wrap single values in arrays.
+ * Use {@link toArray} to normalize at runtime.
+ *
+ * @example
+ * ```ts
+ * type Input = OneOrMany<string>;
+ * const a: Input = 'hello';       // single
+ * const b: Input = ['a', 'b'];   // array
+ * ```
+ */
 type OneOrMany<T> = T | T[];
 
-/** Normalize `OneOrMany<T>` to `T[]` */
+/**
+ * Normalize {@link OneOrMany `OneOrMany<T>`} to `T[]`.
+ *
+ * @param value - A single value, array, or `undefined`.
+ * @returns An array of values. `undefined` yields an empty array.
+ *
+ * @example
+ * ```ts
+ * toArray('a');         // ['a']
+ * toArray(['a', 'b']); // ['a', 'b']
+ * toArray(undefined);  // []
+ * ```
+ */
 function toArray<T>(value: OneOrMany<T> | undefined): T[] {
 	if (value === undefined) return [];
 	return Array.isArray(value) ? value : [value];
 }
 
-/** Known bot identifiers for type-safe presets */
+/**
+ * Known bot identifiers for type-safe presets and autocomplete.
+ *
+ * Organized by category: search engines, social/preview crawlers, and AI crawlers.
+ * Any `string` is still accepted via {@link UserAgent} — this union provides autocomplete only.
+ *
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers Google Crawlers}
+ * @see {@link https://darkvisitors.com/agents Dark Visitors Agent Directory}
+ */
 type KnownBot =
+	// ── Search engines ──────────────────────────────────────────────────
 	| 'Googlebot'
 	| 'Googlebot-Image'
 	| 'Googlebot-News'
 	| 'Googlebot-Video'
 	| 'Bingbot'
-	| 'Slurp' // Yahoo
 	| 'DuckDuckBot'
+	| 'Applebot'
 	| 'Baiduspider'
 	| 'YandexBot'
+	| 'Bravebot'
+	/** @deprecated Yahoo Search has been powered by Bing since 2009. Legacy token, no longer actively crawling. */
+	| 'Slurp'
+	// ── Social / preview crawlers ───────────────────────────────────────
 	| 'facebookexternalhit'
 	| 'Twitterbot'
 	| 'LinkedInBot'
-	| 'Applebot'
-	// AI crawlers
+	// ── AI crawlers: OpenAI ─────────────────────────────────────────────
 	| 'GPTBot'
+	| 'OAI-SearchBot'
 	| 'ChatGPT-User'
-	| 'Claude-Web'
+	// ── AI crawlers: Anthropic ──────────────────────────────────────────
 	| 'ClaudeBot'
-	| 'Amazonbot'
+	| 'Claude-SearchBot'
+	| 'Claude-User'
+	/** @deprecated Undocumented legacy token. Not in Anthropic's official bot list. Kept for defense-in-depth. */
+	| 'Claude-Web'
+	/** @deprecated Undocumented legacy token. Not in Anthropic's official bot list. Kept for defense-in-depth. */
 	| 'anthropic-ai'
-	| 'Bytespider' // TikTok/ByteDance
-	| 'CCBot' // Common Crawl
+	// ── AI crawlers: Google ─────────────────────────────────────────────
 	| 'Google-Extended'
+	| 'GoogleOther'
+	| 'Google-CloudVertexBot'
+	// ── AI crawlers: Meta ───────────────────────────────────────────────
+	| 'meta-externalagent'
+	| 'meta-externalfetcher'
+	| 'FacebookBot'
+	// ── AI crawlers: Apple ──────────────────────────────────────────────
+	| 'Applebot-Extended'
+	// ── AI crawlers: Other ──────────────────────────────────────────────
+	| 'Amazonbot'
+	| 'Bytespider'
+	| 'CCBot'
 	| 'PerplexityBot'
+	| 'Perplexity-User'
 	| 'Cohere-ai'
-	| 'YouBot';
+	| 'cohere-training-data-crawler'
+	| 'YouBot'
+	| 'Ai2Bot-Dolma'
+	| 'PetalBot'
+	| 'Diffbot'
+	| 'omgili'
+	| 'Timpibot';
 
-/** User-agent string — known bots get autocomplete, but any string is valid */
+/**
+ * User-agent string — {@link KnownBot known bots} get autocomplete, but any string is valid.
+ *
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt#user-agent User-agent line spec}
+ */
 type UserAgent = KnownBot | (string & {});
 
 // ---------------------------------------------------------------------------
 // Policy (per user-agent group) — robots.txt output
 // ---------------------------------------------------------------------------
 
-/** Rules for one or more user-agents */
+/**
+ * Rules for one or more user-agents in a robots.txt file.
+ *
+ * Each policy maps to a single `User-agent` group in the output.
+ *
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt Robots.txt spec}
+ *
+ * @example
+ * ```ts
+ * const rule: PolicyRule = {
+ *   userAgent: ['Googlebot', 'Bingbot'],
+ *   allow: '/',
+ *   disallow: ['/admin', '/api'],
+ *   crawlDelay: 10,
+ *   comment: 'Search engines with rate limiting',
+ * };
+ * ```
+ */
 interface PolicyRule {
-	/** Which user-agent(s) this rule applies to. `'*'` = all crawlers. */
+	/**
+	 * Which user-agent(s) this rule applies to. `'*'` = all crawlers.
+	 *
+	 * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt#user-agent User-agent line spec}
+	 */
 	userAgent: OneOrMany<UserAgent>;
 
-	/** Paths to allow crawling. Evaluated after disallow (more specific wins). */
+	/**
+	 * Paths to allow crawling. Evaluated after disallow (more specific wins).
+	 *
+	 * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt#url-matching-based-on-path-values Path matching}
+	 */
 	allow?: OneOrMany<string>;
 
-	/** Paths to disallow crawling. */
+	/**
+	 * Paths to disallow crawling.
+	 *
+	 * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt#disallow Disallow directive}
+	 */
 	disallow?: OneOrMany<string>;
 
 	/**
-	 * Seconds between successive requests.
+	 * Seconds between successive requests. Must be a finite non-negative number.
+	 *
 	 * Non-standard — supported by Bing, Yandex. Ignored by Google.
+	 *
+	 * @see {@link https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0 Bing crawl-delay}
+	 * @see {@link https://yandex.com/support/webmaster/robot-workings/check-yandex-robots.html Yandex crawl-delay}
 	 */
 	crawlDelay?: number;
 
-	/** Inline comments placed above this rule group */
+	/** Inline comments placed above this rule group. */
 	comment?: OneOrMany<string>;
 }
 
@@ -80,7 +178,14 @@ interface PolicyRule {
 // Meta robots — HTML <meta> tag output
 // ---------------------------------------------------------------------------
 
-/** Standard meta robots directives with autocomplete */
+/**
+ * Standard meta robots directives with autocomplete.
+ *
+ * Known directives get IDE autocomplete; the `string & {}` escape hatch
+ * accepts any custom directive.
+ *
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag Meta robots spec}
+ */
 type MetaDirective =
 	| 'index'
 	| 'noindex'
@@ -100,8 +205,13 @@ type MetaDirective =
 /**
  * A single `<meta name="..." content="...">` tag.
  *
- * @example { name: 'robots', content: ['noindex', 'nofollow'] }
- * @example { name: 'GPTBot', content: 'noindex' }
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag Meta robots spec}
+ *
+ * @example
+ * ```ts
+ * const global: MetaTag = { content: ['noindex', 'nofollow'] };
+ * const perBot: MetaTag = { name: 'GPTBot', content: 'noindex' };
+ * ```
  */
 interface MetaTag {
 	/**
@@ -116,14 +226,16 @@ interface MetaTag {
 }
 
 /**
- * Meta robots configuration.
+ * Meta robots configuration — accepts many shorthand forms for ergonomic config.
  *
- * Shorthand forms are normalized internally:
+ * Shorthand forms are normalized internally by {@link normalizeMeta}:
  * - `true` → derive meta tags from the active preset
- * - `'noindex'` → `{ tags: [{ name: 'robots', content: 'noindex' }] }`
- * - `['noindex', 'nofollow']` → `{ tags: [{ name: 'robots', content: ['noindex', 'nofollow'] }] }`
- * - `MetaTag` → `{ tags: [tag] }`
- * - `MetaTag[]` → `{ tags }`
+ * - `'noindex'` → `[{ name: 'robots', content: 'noindex' }]`
+ * - `['noindex', 'nofollow']` → `[{ name: 'robots', content: ['noindex', 'nofollow'] }]`
+ * - `MetaTag` → `[tag]`
+ * - `MetaTag[]` → tags as-is
+ *
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag Meta robots spec}
  */
 type MetaInput =
 	| boolean
@@ -134,7 +246,11 @@ type MetaInput =
 // Presets
 // ---------------------------------------------------------------------------
 
-/** Built-in presets for common configurations */
+/**
+ * Built-in presets for common robots.txt configurations.
+ *
+ * @see {@link presetPolicies} for the actual policy rules each preset generates.
+ */
 type Preset =
 	/** `User-agent: * \n Allow: /` */
 	| 'allowAll'
@@ -142,13 +258,33 @@ type Preset =
 	| 'disallowAll'
 	/** Block known AI/LLM training crawlers while allowing search engines */
 	| 'blockAI'
-	/** Allow only major search engines (Google, Bing, DuckDuckGo, Yahoo, Apple) */
+	/** Allow only major search engines (Google, Bing, DuckDuckGo, Yahoo, Apple, Baidu, Yandex, Brave) */
 	| 'searchOnly';
 
 // ---------------------------------------------------------------------------
 // Plugin options
 // ---------------------------------------------------------------------------
 
+/**
+ * Configuration options for the vite-robots-txt plugin.
+ *
+ * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt Robots.txt spec}
+ *
+ * @example
+ * ```ts
+ * import robotsTxt from 'vite-robots-txt';
+ *
+ * export default defineConfig({
+ *   plugins: [
+ *     robotsTxt({
+ *       preset: 'blockAI',
+ *       sitemap: 'https://example.com/sitemap.xml',
+ *       meta: true,
+ *     }),
+ *   ],
+ * });
+ * ```
+ */
 interface RobotsTxtOptions {
 	/**
 	 * Start from a preset, then override with `policies`.
@@ -161,14 +297,16 @@ interface RobotsTxtOptions {
 	/**
 	 * Custom policy rules. Merged after preset rules.
 	 *
-	 * Shorthand: pass a single `PolicyRule` instead of an array.
+	 * Shorthand: pass a single {@link PolicyRule} instead of an array.
 	 */
 	policies?: OneOrMany<PolicyRule>;
 
 	/**
-	 * Inject `<meta name="robots">` tags into HTML via `transformIndexHtml`.
+	 * Inject `<meta name="robots">` tags into HTML via Vite's `transformIndexHtml` hook.
 	 *
 	 * Multiple shorthand forms for ergonomic config:
+	 *
+	 * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag Meta robots spec}
 	 *
 	 * @example true                          // derive from preset
 	 * @example 'noindex'                     // global noindex
@@ -189,13 +327,18 @@ interface RobotsTxtOptions {
 	 * Set to `false` to explicitly suppress sitemap output.
 	 * Set to `true` to auto-detect from `sitemap.xml` at the site root.
 	 *
+	 * @see {@link https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview Sitemap spec}
+	 *
 	 * @default undefined (no sitemap directive)
 	 */
 	sitemap?: OneOrMany<string> | boolean;
 
 	/**
 	 * Preferred host (Yandex `Host:` directive).
+	 *
 	 * Non-standard — only used by Yandex.
+	 *
+	 * @see {@link https://yandex.com/support/webmaster/robot-workings/check-yandex-robots.html Yandex Host directive}
 	 *
 	 * @default undefined
 	 */

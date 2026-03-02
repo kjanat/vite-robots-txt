@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { AI_BOTS, SEARCH_ENGINES } from '../src/presets.ts';
 import { serialize } from '../src/serialize.ts';
 
 describe('serialize', () => {
@@ -26,12 +27,26 @@ describe('serialize', () => {
 		expect(result).toContain('Disallow: /');
 	});
 
+	it('blockAI preset includes all AI_BOTS', () => {
+		const result = serialize({ preset: 'blockAI' });
+		for (const bot of AI_BOTS) {
+			expect(result).toContain(`User-agent: ${bot}`);
+		}
+	});
+
 	it('renders searchOnly preset', () => {
 		const result = serialize({ preset: 'searchOnly' });
 		expect(result).toContain('User-agent: *\nDisallow: /');
 		expect(result).toContain('User-agent: Googlebot');
 		expect(result).toContain('User-agent: Bingbot');
 		expect(result).toContain('Allow: /');
+	});
+
+	it('searchOnly preset includes all SEARCH_ENGINES', () => {
+		const result = serialize({ preset: 'searchOnly' });
+		for (const engine of SEARCH_ENGINES) {
+			expect(result).toContain(`User-agent: ${engine}`);
+		}
 	});
 
 	it('renders custom policies', () => {

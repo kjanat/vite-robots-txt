@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dev server content deferred to `configResolved` (siteBase now available)
 - `sitemap: true` now warns that directives should be absolute URLs per spec
 - tsdown config: ESM-only (drop CJS), unbundle, DCE minify, publint + attw checks
+- `prepack`/`postpack`/`prepublishOnly` lifecycle scripts for clean tarballs
+- Tar script simplified — `GITHUB_OUTPUT` handling moved to workflow
 - Test runner migrated from vitest to `bun:test`; tests moved to `tests/`
 - Publish workflow hardened: `--frozen-lockfile`, test+typecheck gate, strict tag pattern
 - Autofix workflow: removed `--unsafe` flag from biome

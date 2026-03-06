@@ -1,5 +1,5 @@
 // Default export for convenient `import robotsTxt from 'vite-robots-txt'`
-export { flatFile, serializeFlatFile, serializeVercelJson, vercelJson } from './headers.ts';
+export { flatFile, serializeFlatFile } from './headers.ts';
 export { metaTagsToHtml, normalizeMeta } from './meta.ts';
 export { robotsTxt, robotsTxt as default } from './plugin.ts';
 export { AI_BOTS, presetPolicies, SEARCH_ENGINES } from './presets.ts';

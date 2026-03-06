@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: tests */
 import { describe, expect, it, mock } from 'bun:test';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ResolvedConfig } from 'vite';
@@ -342,29 +343,6 @@ describe('generateBundle', () => {
 				delete process.env.CF_PAGES;
 			} else {
 				process.env.CF_PAGES = previous;
-			}
-		}
-	});
-
-	it('emits vercel.json when VERCEL auto-detected', () => {
-		const previous = process.env.VERCEL;
-		process.env.VERCEL = '1';
-
-		try {
-			const plugin = setupWithConfig({
-				preset: 'allowAll',
-				headers: [{ pattern: '/*', directives: 'noindex' }],
-			});
-			const { ctx, captured } = fakeBundleCtx();
-			hook(plugin, 'generateBundle').call(ctx);
-
-			expect(captured.emitted).toHaveLength(2);
-			expect(captured.emitted[1]?.fileName).toBe('vercel.json');
-		} finally {
-			if (previous === undefined) {
-				delete process.env.VERCEL;
-			} else {
-				process.env.VERCEL = previous;
 			}
 		}
 	});

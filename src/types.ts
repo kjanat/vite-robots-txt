@@ -250,7 +250,7 @@ type MetaInput =
  * One logical X-Robots-Tag rule for URL pattern matching.
  *
  * This is provider-agnostic input. Providers map this to platform-specific
- * output files such as `_headers` or `vercel.json`.
+ * output files such as `_headers`.
  */
 interface HeaderRule {
 	/** URL or URL pattern this rule applies to. */
@@ -294,9 +294,8 @@ interface HeaderProviderContext {
  * Built-in provider ids.
  *
  * - `flatFile`: emits `_headers` format (Cloudflare Pages/Workers static assets, Netlify)
- * - `vercel`: emits `vercel.json` with `headers` entries
  */
-type HeaderProviderId = 'flatFile' | 'vercel';
+type HeaderProviderId = 'flatFile';
 
 /**
  * Header provider callback.
@@ -328,7 +327,7 @@ interface HeadersConfig {
 	/**
 	 * Enable env-based provider auto-detection.
 	 *
-	 * @default true
+	 * @default true when `provider` is omitted
 	 */
 	autoDetect?: boolean;
 }
@@ -427,7 +426,6 @@ interface RobotsTxtOptions {
 	 * - `CF_PAGES=1` (Cloudflare Pages)
 	 * - `CF_WORKERS=1` or `CLOUDFLARE_WORKERS=1` (Cloudflare Workers static assets)
 	 * - `NETLIFY=true` (Netlify)
-	 * - `VERCEL=1` (Vercel)
 	 *
 	 * Shorthand accepted:
 	 * @example { pattern: '/*', directives: 'noindex' }

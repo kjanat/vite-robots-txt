@@ -151,18 +151,19 @@ robotsTxt({
 Auto-detection uses env vars:
 
 - `CF_PAGES=1` / `CF_WORKERS=1` / `CLOUDFLARE_WORKERS=1` / `NETLIFY=true` -> emits `_headers`
-- `VERCEL=1` -> emits `vercel.json`
 - no match -> falls back to `_headers`
+
+Vercel support is deferred for now.
 
 ### Explicit providers
 
 ```ts
-import robotsTxt, { flatFile, vercelJson } from 'vite-robots-txt';
+import robotsTxt, { flatFile } from 'vite-robots-txt';
 
 robotsTxt({
 	headers: {
 		rules: { pattern: '/*', directives: 'noindex' },
-		provider: [flatFile(), vercelJson()],
+		provider: flatFile(),
 		autoDetect: false,
 	},
 });
@@ -240,9 +241,7 @@ const html = metaTagsToHtml(tags);
 | `robotsTxt` (default) | Vite plugin factory                      |
 | `serialize`           | Standalone robots.txt serializer         |
 | `flatFile`            | `_headers` provider factory              |
-| `vercelJson`          | `vercel.json` provider factory           |
 | `serializeFlatFile`   | Standalone `_headers` serializer         |
-| `serializeVercelJson` | Standalone `vercel.json` serializer      |
 | `normalizeMeta`       | Normalize meta input to `MetaTag[]`      |
 | `metaTagsToHtml`      | Convert `MetaTag[]` to Vite HTML tags    |
 | `AI_BOTS`             | Array of known AI crawler user-agents    |

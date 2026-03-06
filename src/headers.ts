@@ -2,7 +2,7 @@
  * X-Robots-Tag header rule normalization + provider outputs.
  *
  * Providers convert platform-agnostic header rules into deployment-specific
- * files such as `_headers` (Cloudflare/Netlify) or `vercel.json`.
+ * files such as `_headers` (Cloudflare/Netlify).
  *
  * @module
  */
@@ -80,10 +80,6 @@ function detectProviderIds(env: Readonly<Record<string, string | undefined>>): H
 		add('flatFile');
 	}
 
-	if (isTruthyEnv(env.VERCEL)) {
-		add('vercel');
-	}
-
 	return detected;
 }
 
@@ -149,61 +145,6 @@ function serializeFlatFile(rules: readonly ResolvedHeaderRule[]): string {
 	return `${blocks.join('\n\n')}\n`;
 }
 
-function toVercelSource(pattern: string, warn: (message: string) => void): string | undefined {
-	let source = pattern.trim();
-	if (source.length === 0) return undefined;
-
-	if (source.startsWith('https://') || source.startsWith('http://')) {
-		const schemeIndex = source.indexOf('://');
-		const pathIndex = source.indexOf('/', schemeIndex + 3);
-		source = pathIndex === -1 ? '/' : source.slice(pathIndex);
-		warn(`[vite-robots-txt] vercel provider ignores host in pattern "${pattern}". using path "${source}".`);
-	}
-
-	if (!source.startsWith('/')) {
-		warn(`[vite-robots-txt] vercel provider skipped unsupported pattern "${pattern}".`);
-		return undefined;
-	}
-
-	if (source.includes('*')) {
-		return source.replaceAll('*', '(.*)');
-	}
-
-	return source;
-}
-
-function serializeVercelJson(
-	rules: readonly ResolvedHeaderRule[],
-	warn: (message: string) => void,
-): string {
-	const grouped = new Map<string, Array<{ key: string; value: string }>>();
-
-	for (const rule of rules) {
-		const source = toVercelSource(rule.pattern, warn);
-		if (source === undefined) continue;
-
-		const value = serializeHeaderValue(rule);
-		const header = { key: HEADER_NAME, value };
-
-		const existing = grouped.get(source);
-		if (existing === undefined) {
-			grouped.set(source, [header]);
-			continue;
-		}
-
-		existing.push(header);
-	}
-
-	const payload = {
-		headers: Array.from(grouped.entries(), ([source, headers]) => ({
-			source,
-			headers,
-		})),
-	};
-
-	return `${JSON.stringify(payload, null, 2)}\n`;
-}
-
 function flatFile(options: { fileName?: string } = {}): HeaderProviderFn {
 	const fileName = options.fileName ?? '_headers';
 	return (rules) => ({
@@ -212,17 +153,11 @@ function flatFile(options: { fileName?: string } = {}): HeaderProviderFn {
 	});
 }
 
-function vercelJson(options: { fileName?: string } = {}): HeaderProviderFn {
-	const fileName = options.fileName ?? 'vercel.json';
-	return (rules, context) => ({
-		fileName,
-		source: serializeVercelJson(rules, context.warn),
-	});
-}
-
 function resolveBuiltInProvider(provider: HeaderProviderId): HeaderProviderFn {
-	if (provider === 'flatFile') return flatFile();
-	return vercelJson();
+	switch (provider) {
+		case 'flatFile':
+			return flatFile();
+	}
 }
 
 function dedupeOutputFiles(
@@ -264,4 +199,4 @@ function generateHeaderOutputs(
 	return dedupeOutputFiles(outputs, context.warn);
 }
 
-export { flatFile, generateHeaderOutputs, resolveHeaderRules, serializeFlatFile, serializeVercelJson, vercelJson };
+export { flatFile, generateHeaderOutputs, resolveHeaderRules, serializeFlatFile };

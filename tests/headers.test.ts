@@ -1,12 +1,5 @@
 import { describe, expect, it, mock } from 'bun:test';
-import {
-	flatFile,
-	generateHeaderOutputs,
-	resolveHeaderRules,
-	serializeFlatFile,
-	serializeVercelJson,
-	vercelJson,
-} from '../src/headers.ts';
+import { flatFile, generateHeaderOutputs, resolveHeaderRules, serializeFlatFile } from '../src/headers.ts';
 
 describe('resolveHeaderRules', () => {
 	it('normalizes OneOrMany directives', () => {
@@ -47,49 +40,6 @@ describe('serializeFlatFile', () => {
 	});
 });
 
-describe('serializeVercelJson', () => {
-	it('converts wildcard patterns for vercel.json', () => {
-		const warn = mock((_message: string) => {});
-		const out = serializeVercelJson([{ pattern: '/static/*', directives: ['noindex'] }], warn);
-
-		expect(out).toContain('"source": "/static/(.*)"');
-		expect(out).toContain('"key": "X-Robots-Tag"');
-		expect(out).toContain('"value": "noindex"');
-		expect(warn).not.toHaveBeenCalled();
-	});
-
-	it('strips host for absolute patterns and warns', () => {
-		const warn = mock((_message: string) => {});
-		const out = serializeVercelJson([{ pattern: 'https://example.pages.dev/*', directives: ['noindex'] }], warn);
-
-		expect(out).toContain('"source": "/(.*)"');
-		expect(warn).toHaveBeenCalledTimes(1);
-	});
-
-	it('skips unsupported non-path patterns and warns', () => {
-		const warn = mock((_message: string) => {});
-		const out = serializeVercelJson([{ pattern: 'docs/*', directives: ['noindex'] }], warn);
-
-		expect(out).toContain('"headers": []');
-		expect(warn).toHaveBeenCalledWith(
-			'[vite-robots-txt] vercel provider skipped unsupported pattern "docs/*".',
-		);
-	});
-
-	it('keeps non-wildcard paths and merges repeated sources', () => {
-		const warn = mock((_message: string) => {});
-		const out = serializeVercelJson([
-			{ pattern: '/docs', directives: ['noindex'] },
-			{ pattern: '/docs', directives: ['nofollow'], userAgent: 'Googlebot' },
-		], warn);
-
-		expect(out).toContain('"source": "/docs"');
-		expect(out).toContain('"value": "noindex"');
-		expect(out).toContain('"value": "Googlebot: nofollow"');
-		expect(warn).not.toHaveBeenCalled();
-	});
-});
-
 describe('generateHeaderOutputs', () => {
 	it('auto-detects Cloudflare/Netlify to _headers', () => {
 		const warn = mock((_message: string) => {});
@@ -115,17 +65,6 @@ describe('generateHeaderOutputs', () => {
 		expect(outputs[0]?.fileName).toBe('_headers');
 	});
 
-	it('auto-detects Vercel to vercel.json', () => {
-		const warn = mock((_message: string) => {});
-		const outputs = generateHeaderOutputs(
-			[{ pattern: '/*', directives: 'noindex' }],
-			{ env: { VERCEL: '1' }, warn },
-		);
-
-		expect(outputs).toHaveLength(1);
-		expect(outputs[0]?.fileName).toBe('vercel.json');
-	});
-
 	it('falls back to flatFile when auto-detect finds nothing', () => {
 		const warn = mock((_message: string) => {});
 		const outputs = generateHeaderOutputs(
@@ -144,14 +83,17 @@ describe('generateHeaderOutputs', () => {
 		const outputs = generateHeaderOutputs(
 			{
 				rules: [{ pattern: '/docs/*', directives: 'nosnippet' }],
-				provider: [flatFile({ fileName: 'custom-headers.txt' }), vercelJson({ fileName: 'custom-vercel.json' })],
+				provider: [
+					flatFile({ fileName: 'custom-headers-a.txt' }),
+					flatFile({ fileName: 'custom-headers-b.txt' }),
+				],
 				autoDetect: false,
 			},
-			{ env: { CF_PAGES: '1', VERCEL: '1' }, warn },
+			{ env: { CF_PAGES: '1' }, warn },
 		);
 
 		expect(outputs).toHaveLength(2);
-		expect(outputs.map((output) => output.fileName)).toEqual(['custom-headers.txt', 'custom-vercel.json']);
+		expect(outputs.map((output) => output.fileName)).toEqual(['custom-headers-a.txt', 'custom-headers-b.txt']);
 	});
 
 	it('does not auto-detect when explicit provider is set', () => {
@@ -161,7 +103,7 @@ describe('generateHeaderOutputs', () => {
 				rules: [{ pattern: '/*', directives: 'noindex' }],
 				provider: 'flatFile',
 			},
-			{ env: { VERCEL: '1' }, warn },
+			{ env: { CF_PAGES: '1' }, warn },
 		);
 
 		expect(outputs).toHaveLength(1);

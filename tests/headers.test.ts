@@ -78,6 +78,20 @@ describe('generateHeaderOutputs', () => {
 		);
 	});
 
+	it('falls back to flatFile when only VERCEL env is set', () => {
+		const warn = mock((_message: string) => {});
+		const outputs = generateHeaderOutputs(
+			[{ pattern: '/*', directives: 'noindex' }],
+			{ env: { VERCEL: '1' }, warn },
+		);
+
+		expect(outputs).toHaveLength(1);
+		expect(outputs[0]?.fileName).toBe('_headers');
+		expect(warn).toHaveBeenCalledWith(
+			'[vite-robots-txt] headers provider auto-detect found none. defaulting to flatFile (_headers).',
+		);
+	});
+
 	it('accepts explicit provider callbacks and disables auto-detect', () => {
 		const warn = mock((_message: string) => {});
 		const outputs = generateHeaderOutputs(
@@ -108,5 +122,16 @@ describe('generateHeaderOutputs', () => {
 
 		expect(outputs).toHaveLength(1);
 		expect(outputs[0]?.fileName).toBe('_headers');
+	});
+
+	it('warns and skips unknown provider ids at runtime', () => {
+		const warn = mock((_message: string) => {});
+		const config = JSON.parse(
+			'{"rules":[{"pattern":"/*","directives":"noindex"}],"provider":"vercel","autoDetect":false}',
+		);
+		const outputs = generateHeaderOutputs(config, { env: {}, warn });
+
+		expect(outputs).toHaveLength(0);
+		expect(warn).toHaveBeenCalledWith('[vite-robots-txt] unknown headers provider "vercel". skipping.');
 	});
 });

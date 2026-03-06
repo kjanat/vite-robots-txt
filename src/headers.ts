@@ -153,10 +153,12 @@ function flatFile(options: { fileName?: string } = {}): HeaderProviderFn {
 	});
 }
 
-function resolveBuiltInProvider(provider: HeaderProviderId): HeaderProviderFn {
+function resolveBuiltInProvider(provider: string): HeaderProviderFn | undefined {
 	switch (provider) {
 		case 'flatFile':
 			return flatFile();
+		default:
+			return undefined;
 	}
 }
 
@@ -191,6 +193,10 @@ function generateHeaderOutputs(
 
 	for (const provider of providers) {
 		const fn = typeof provider === 'string' ? resolveBuiltInProvider(provider) : provider;
+		if (fn === undefined) {
+			context.warn(`[vite-robots-txt] unknown headers provider "${provider}". skipping.`);
+			continue;
+		}
 		const output = fn(rules, context);
 		if (output === null) continue;
 		outputs.push(output);

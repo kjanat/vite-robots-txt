@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: tests */
+/** biome-ignore-all lint/style/noNonNullAssertion: test helpers use asserted hooks for brevity */
 import { describe, expect, it, mock } from 'bun:test';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ResolvedConfig } from 'vite';

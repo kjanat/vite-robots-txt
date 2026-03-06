@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: test helpers use asserted hooks for brevity */
 import { describe, expect, it, mock } from 'bun:test';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ResolvedConfig } from 'vite';
@@ -253,13 +254,16 @@ interface EmittedAsset {
 
 /** Create a fake Rollup plugin context that captures emitFile/warn calls */
 function fakeBundleCtx() {
-	const captured: { emitted?: EmittedAsset; warned?: string } = {};
+	const captured: { emitted: EmittedAsset[]; warned: string[] } = {
+		emitted: [],
+		warned: [],
+	};
 	const ctx = {
 		warn: mock((msg: string) => {
-			captured.warned = msg;
+			captured.warned.push(msg);
 		}),
 		emitFile: mock((asset: EmittedAsset) => {
-			captured.emitted = asset;
+			captured.emitted.push(asset);
 		}),
 	};
 	return { ctx, captured };
@@ -272,7 +276,7 @@ describe('generateBundle', () => {
 		hook(plugin, 'generateBundle').call(ctx);
 
 		expect(ctx.emitFile).toHaveBeenCalledTimes(1);
-		expect(captured.emitted).toEqual({
+		expect(captured.emitted[0]).toEqual({
 			type: 'asset',
 			fileName: 'robots.txt',
 			source: 'User-agent: *\nAllow: /\n',
@@ -284,7 +288,7 @@ describe('generateBundle', () => {
 		const { ctx, captured } = fakeBundleCtx();
 		hook(plugin, 'generateBundle').call(ctx);
 
-		expect(captured.emitted?.fileName).toBe('custom-robots.txt');
+		expect(captured.emitted[0]?.fileName).toBe('custom-robots.txt');
 	});
 
 	it('resolves sitemap: true with warning', () => {
@@ -292,8 +296,8 @@ describe('generateBundle', () => {
 		const { ctx, captured } = fakeBundleCtx();
 		hook(plugin, 'generateBundle').call(ctx);
 
-		expect(captured.warned).toContain('sitemap: true');
-		expect(captured.emitted?.source).toContain('Sitemap: /sitemap.xml');
+		expect(captured.warned[0]).toContain('sitemap: true');
+		expect(captured.emitted[0]?.source).toContain('Sitemap: /sitemap.xml');
 	});
 
 	it('resolves sitemap: true with siteBase', () => {
@@ -301,7 +305,7 @@ describe('generateBundle', () => {
 		const { ctx, captured } = fakeBundleCtx();
 		hook(plugin, 'generateBundle').call(ctx);
 
-		expect(captured.emitted?.source).toContain('Sitemap: /app/sitemap.xml');
+		expect(captured.emitted[0]?.source).toContain('Sitemap: /app/sitemap.xml');
 	});
 
 	it('passes through absolute sitemap URL', () => {
@@ -312,8 +316,35 @@ describe('generateBundle', () => {
 		const { ctx, captured } = fakeBundleCtx();
 		hook(plugin, 'generateBundle').call(ctx);
 
-		expect(captured.warned).toBeUndefined();
-		expect(captured.emitted?.source).toContain('Sitemap: https://example.com/sitemap.xml');
+		expect(captured.warned).toHaveLength(0);
+		expect(captured.emitted[0]?.source).toContain('Sitemap: https://example.com/sitemap.xml');
+	});
+
+	it('emits _headers when CF_PAGES auto-detected', () => {
+		const previous = process.env.CF_PAGES;
+		process.env.CF_PAGES = '1';
+
+		try {
+			const plugin = setupWithConfig({
+				preset: 'allowAll',
+				headers: [{ pattern: '/*', directives: 'noindex' }],
+			});
+			const { ctx, captured } = fakeBundleCtx();
+			hook(plugin, 'generateBundle').call(ctx);
+
+			expect(captured.emitted).toHaveLength(2);
+			expect(captured.emitted[1]).toEqual({
+				type: 'asset',
+				fileName: '_headers',
+				source: '/*\n  X-Robots-Tag: noindex\n',
+			});
+		} finally {
+			if (previous === undefined) {
+				delete process.env.CF_PAGES;
+			} else {
+				process.env.CF_PAGES = previous;
+			}
+		}
 	});
 });
 

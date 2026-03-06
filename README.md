@@ -133,6 +133,42 @@ robotsTxt({
 });
 ```
 
+## X-Robots-Tag headers
+
+Generate HTTP `X-Robots-Tag` headers from the same directive vocabulary.
+
+### Auto-detect provider from deploy env
+
+```ts
+robotsTxt({
+	headers: [
+		{ pattern: '/static/*', directives: 'nosnippet' },
+		{ pattern: 'https://:project.pages.dev/*', directives: 'noindex' },
+	],
+});
+```
+
+Auto-detection uses env vars:
+
+- `CF_PAGES=1` / `CF_WORKERS=1` / `CLOUDFLARE_WORKERS=1` / `NETLIFY=true` -> emits `_headers`
+- no match -> falls back to `_headers`
+
+Vercel support is deferred for now.
+
+### Explicit providers
+
+```ts
+import robotsTxt, { flatFile } from 'vite-robots-txt';
+
+robotsTxt({
+	headers: {
+		rules: { pattern: '/*', directives: 'noindex' },
+		provider: flatFile(),
+		autoDetect: false,
+	},
+});
+```
+
 ## Options
 
 | Option     | Type                                                       | Default         | Description                              |
@@ -140,6 +176,7 @@ robotsTxt({
 | `preset`   | `'allowAll' \| 'disallowAll' \| 'blockAI' \| 'searchOnly'` | —               | Start from a preset                      |
 | `policies` | `PolicyRule \| PolicyRule[]`                               | —               | Custom policy rules                      |
 | `meta`     | `boolean \| string \| string[] \| MetaTag \| MetaTag[]`    | —               | Inject `<meta>` robots tags into HTML    |
+| `headers`  | `HeaderRule \| HeaderRule[] \| HeadersConfig`              | —               | Emit `X-Robots-Tag` header config files  |
 | `sitemap`  | `string \| string[] \| boolean`                            | —               | Sitemap URL(s) or `true` for auto-detect |
 | `host`     | `string`                                                   | —               | Yandex `Host:` directive                 |
 | `fileName` | `string`                                                   | `'robots.txt'`  | Output file name                         |
@@ -162,6 +199,14 @@ robotsTxt({
 | --------- | -------------------- | ---------- | ------------------------------ |
 | `name`    | `'robots' \| string` | `'robots'` | Bot name or `'robots'` for all |
 | `content` | `string \| string[]` | —          | Meta directives                |
+
+### HeaderRule
+
+| Field        | Type                 | Description                                        |
+| ------------ | -------------------- | -------------------------------------------------- |
+| `pattern`    | `string`             | URL pattern (`/*`, `/static/*`, absolute URL, etc) |
+| `directives` | `string \| string[]` | `X-Robots-Tag` directives                          |
+| `userAgent`  | `string`             | Optional bot-prefixed header value                 |
 
 ### Available meta directives
 
@@ -195,6 +240,8 @@ const html = metaTagsToHtml(tags);
 | --------------------- | ---------------------------------------- |
 | `robotsTxt` (default) | Vite plugin factory                      |
 | `serialize`           | Standalone robots.txt serializer         |
+| `flatFile`            | `_headers` provider factory              |
+| `serializeFlatFile`   | Standalone `_headers` serializer         |
 | `normalizeMeta`       | Normalize meta input to `MetaTag[]`      |
 | `metaTagsToHtml`      | Convert `MetaTag[]` to Vite HTML tags    |
 | `AI_BOTS`             | Array of known AI crawler user-agents    |
@@ -204,3 +251,5 @@ const html = metaTagsToHtml(tags);
 ## License
 
 MIT
+
+<!--markdownlint-disable-file no-hard-tabs-->

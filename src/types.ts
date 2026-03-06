@@ -243,6 +243,104 @@ type MetaInput =
 	| OneOrMany<MetaTag>;
 
 // ---------------------------------------------------------------------------
+// X-Robots-Tag headers — HTTP header output
+// ---------------------------------------------------------------------------
+
+/**
+ * One logical X-Robots-Tag rule for URL pattern matching.
+ *
+ * This is provider-agnostic input. Providers map this to platform-specific
+ * output files such as `_headers`.
+ */
+interface HeaderRule {
+	/** URL or URL pattern this rule applies to. */
+	pattern: string;
+
+	/** One or more robots directives, e.g. `noindex`, `nosnippet`. */
+	directives: OneOrMany<MetaDirective>;
+
+	/** Optional bot name for user-agent-specific X-Robots-Tag values. */
+	userAgent?: UserAgent;
+}
+
+/**
+ * Normalized, provider-ready header rule.
+ *
+ * Internal providers consume this shape to avoid repeated runtime branching.
+ */
+interface ResolvedHeaderRule {
+	pattern: string;
+	directives: MetaDirective[];
+	userAgent?: UserAgent;
+}
+
+/**
+ * One build output emitted by a header provider.
+ */
+interface HeaderOutputFile {
+	fileName: string;
+	source: string;
+}
+
+/**
+ * Context passed to header providers during build.
+ */
+interface HeaderProviderContext {
+	env: Readonly<Record<string, string | undefined>>;
+	warn: (message: string) => void;
+}
+
+/**
+ * Built-in provider ids.
+ *
+ * - `flatFile`: emits `_headers` format (Cloudflare Pages/Workers static assets, Netlify)
+ */
+type HeaderProviderId = 'flatFile';
+
+/**
+ * Header provider callback.
+ */
+type HeaderProviderFn = (
+	rules: readonly ResolvedHeaderRule[],
+	context: HeaderProviderContext,
+) => HeaderOutputFile | null;
+
+/**
+ * Header provider — either a built-in provider id or a custom callback.
+ */
+type HeaderProvider = HeaderProviderId | HeaderProviderFn;
+
+/**
+ * HTTP header generation config.
+ */
+interface HeadersConfig {
+	/** Provider-agnostic X-Robots-Tag rules. */
+	rules: OneOrMany<HeaderRule>;
+
+	/**
+	 * Output providers.
+	 *
+	 * If omitted, providers are auto-detected from env vars.
+	 */
+	provider?: OneOrMany<HeaderProvider>;
+
+	/**
+	 * Enable env-based provider auto-detection.
+	 *
+	 * @default true when `provider` is omitted
+	 */
+	autoDetect?: boolean;
+}
+
+/**
+ * Accepted `headers` option input.
+ *
+ * - `HeaderRule | HeaderRule[]` shorthand
+ * - full `HeadersConfig`
+ */
+type HeadersInput = HeadersConfig | OneOrMany<HeaderRule>;
+
+// ---------------------------------------------------------------------------
 // Presets
 // ---------------------------------------------------------------------------
 
@@ -322,6 +420,20 @@ interface RobotsTxtOptions {
 	meta?: MetaInput;
 
 	/**
+	 * Generate `X-Robots-Tag` headers for static assets.
+	 *
+	 * Supports provider auto-detection:
+	 * - `CF_PAGES=1` (Cloudflare Pages)
+	 * - `CF_WORKERS=1` or `CLOUDFLARE_WORKERS=1` (Cloudflare Workers static assets)
+	 * - `NETLIFY=true` (Netlify)
+	 *
+	 * Shorthand accepted:
+	 * @example { pattern: '/*', directives: 'noindex' }
+	 * @example [{ pattern: '/static/*', directives: 'nosnippet' }]
+	 */
+	headers?: HeadersInput;
+
+	/**
 	 * Sitemap URL(s) — absolute URLs written as global `Sitemap:` directives.
 	 *
 	 * Set to `false` to explicitly suppress sitemap output.
@@ -375,4 +487,23 @@ interface RobotsTxtOptions {
 // ---------------------------------------------------------------------------
 
 export { toArray };
-export type { KnownBot, MetaDirective, MetaInput, MetaTag, OneOrMany, PolicyRule, Preset, RobotsTxtOptions, UserAgent };
+export type {
+	HeaderOutputFile,
+	HeaderProvider,
+	HeaderProviderContext,
+	HeaderProviderFn,
+	HeaderProviderId,
+	HeaderRule,
+	HeadersConfig,
+	HeadersInput,
+	KnownBot,
+	MetaDirective,
+	MetaInput,
+	MetaTag,
+	OneOrMany,
+	PolicyRule,
+	Preset,
+	ResolvedHeaderRule,
+	RobotsTxtOptions,
+	UserAgent,
+};

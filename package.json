@@ -1,57 +1,57 @@
 {
-  "name": "vite-robots-txt",
-  "version": "1.0.0",
-  "description": "Vite plugin to generate robots.txt with presets, per-bot rules, and dev mode blocking",
-  "keywords": [
-    "vite",
-    "vite-plugin",
-    "robots.txt",
-    "robots",
-    "seo",
-    "crawlers",
-    "ai-crawlers"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/kjanat/vite-robots-txt.git"
-  },
-  "license": "MIT",
-  "author": "Kaj Kowalski <info@kajkowalski.nl> (https://github.com/kjanat)",
-  "type": "module",
-  "exports": {
-    ".": "./dist/index.mjs",
-    "./package.json": "./package.json"
-  },
-  "types": "dist/index.d.mts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "bd": "tsdown",
-    "dev": "tsdown --watch",
-    "fmt": "dprint fmt",
-    "lint": "biome check src/",
-    "prepack": "bun --bun bd -l error && dprint fmt README.md >/dev/null",
-    "postpack": "git restore README.md >/dev/null",
-    "prepublishOnly": "bun test && bun --bun typecheck",
-    "tar": "bun pm pack --quiet | awk 'NF{line=$0} END{print line}'",
-    "test": "bun test",
-    "typecheck": "tsgo --noEmit"
-  },
-  "devDependencies": {
-    "@arethetypeswrong/core": "^0.18.2",
-    "@biomejs/biome": "^2.4.4",
-    "@types/bun": "^1.3.9",
-    "@types/node": "^25.3.3",
-    "@typescript/native-preview": "^7.0.0-dev.20260301.1",
-    "dprint": "^0.52.0",
-    "publint": "^0.3.18",
-    "tsdown": "0.21.0-beta.2",
-    "typescript": "^5.9.3",
-    "unplugin-unused": "^0.5.7",
-    "vite": "^7.3.1"
-  },
-  "peerDependencies": {
-    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0"
-  }
+	"name": "vite-robots-txt",
+	"version": "1.0.0",
+	"description": "Vite plugin to generate robots.txt with presets, per-bot rules, and dev mode blocking",
+	"keywords": [
+		"vite",
+		"vite-plugin",
+		"robots.txt",
+		"robots",
+		"seo",
+		"crawlers",
+		"ai-crawlers"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kjanat/vite-robots-txt.git"
+	},
+	"license": "MIT",
+	"author": "Kaj Kowalski <info@kajkowalski.nl> (https://github.com/kjanat)",
+	"type": "module",
+	"exports": {
+		".": "./dist/index.mjs",
+		"./package.json": "./package.json"
+	},
+	"types": "dist/index.d.mts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"bd": "tsdown",
+		"dev": "tsdown --watch",
+		"fmt": "dprint fmt",
+		"lint": "biome check src/",
+		"prepack": "bun --bun bd -l error && dprint fmt README.md >/dev/null",
+		"postpack": "git restore README.md >/dev/null",
+		"prepublishOnly": "bun test && bun --bun typecheck",
+		"tar": "bun pm pack --quiet | awk 'NF{line=$0} END{print line}'",
+		"test": "bun test",
+		"typecheck": "tsgo --noEmit"
+	},
+	"devDependencies": {
+		"@arethetypeswrong/core": "^0.18.2",
+		"@biomejs/biome": "^2.4.4",
+		"@types/bun": "^1.3.9",
+		"@types/node": "^25.3.3",
+		"@typescript/native-preview": "^7.0.0-dev.20260301.1",
+		"dprint": "^0.52.0",
+		"publint": "^0.3.18",
+		"tsdown": "0.21.0-beta.2",
+		"typescript": "^5.9.3",
+		"unplugin-unused": "^0.5.7",
+		"vite": "^7.3.1"
+	},
+	"peerDependencies": {
+		"vite": "^5.0.0 || ^6.0.0 || ^7.0.0"
+	}
 }

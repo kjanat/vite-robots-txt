@@ -8,6 +8,7 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { HtmlTagDescriptor, Plugin } from 'vite';
+import { generateHeaderOutputs } from './headers.ts';
 import { metaTagsToHtml, normalizeMeta } from './meta.ts';
 import { serialize } from './serialize.ts';
 import type { RobotsTxtOptions } from './types.ts';
@@ -149,6 +150,21 @@ function robotsTxt(options: RobotsTxtOptions = {}): Plugin {
 				fileName,
 				source: serialize(resolved),
 			});
+
+			const headerOutputs = generateHeaderOutputs(options.headers, {
+				env: process.env,
+				warn: (message) => {
+					this.warn(message);
+				},
+			});
+
+			for (const output of headerOutputs) {
+				this.emitFile({
+					type: 'asset',
+					fileName: output.fileName,
+					source: output.source,
+				});
+			}
 		},
 	};
 }
